@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validate</title>
+</head>
+<body>
+    <h1>Validate</h1>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <p>{{msg}}</p>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method='POST'>
+        <input type=text name="code" inputmode="numeric" maxlength="4" required> <!--supposed to only take numeric input, bugged?-->>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
