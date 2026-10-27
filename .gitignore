@@ -1,0 +1,6 @@
+
+__pycache__/
+*.pyc
+masonfind.db
+.env
+.venv/
