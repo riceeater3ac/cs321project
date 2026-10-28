@@ -117,11 +117,10 @@ def validate():
 
 @app.route("/main")
 def mainpage():
-    if "user" in session:
-        user = session["user"]
-        return f"Signed in as {user}"
+    if "user" not in session:
+        return redirect(url_for("login"))
 
-    return redirect(url_for("login"))
+    return render_template("main.html", user=session["user"])
 
 
 # ======================================
