@@ -1,17 +1,233 @@
 
+/* ===================================
+   MASONFIND - MAIN DESIGN
+=================================== */
+
+:root {
+    --mason-green: #006633;
+    --mason-gold: #ffcc33;
+    --background: #f4f6f8;
+    --text: #26332c;
+}
+
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f6f8;
+    background-color: var(--background);
+    color: var(--text);
     text-align: center;
-    padding: 50px;
+    margin: 0;
+    padding: 40px 20px;
 }
 
 h1 {
-    color: #006633;
+    color: var(--mason-green);
 }
 
 p {
-    font-size: 18px;
+    font-size: 16px;
+    line-height: 1.6;
 }
 
+a {
+    color: var(--mason-green);
+}
 
+/* ===================================
+   LOST AND FOUND ITEM PAGES
+=================================== */
+
+.items-page {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page-header {
+    margin-bottom: 25px;
+}
+
+.page-header h1 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+
+.page-header p {
+    color: #66736b;
+}
+
+.items-navigation {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.nav-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--mason-green);
+    color: var(--mason-green);
+    background: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.nav-button:hover {
+    background: #e7f2ec;
+}
+
+.primary-button {
+    background: var(--mason-green);
+    color: white;
+}
+
+.primary-button:hover {
+    background: #004d26;
+}
+
+/* ===================================
+   ITEM CARDS
+=================================== */
+
+.items-list {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 20px;
+}
+
+.item-card {
+    background: white;
+    padding: 24px;
+    border-radius: 14px;
+    border: 1px solid #e0e7e2;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    text-align: left;
+    min-width: 0;
+}
+
+.item-card h2 {
+    color: var(--mason-green);
+    margin-top: 0;
+}
+
+.item-card p {
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.item-card svg {
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+    margin-right: 6px;
+    color: var(--mason-green);
+}
+
+.item-photo {
+    display: block;
+    width: 100%;
+    max-height: 250px;
+    object-fit: contain;
+    background: #f4f6f8;
+    border-radius: 10px;
+    margin: 15px 0;
+}
+
+/* ===================================
+   ITEM STATUS
+=================================== */
+
+.status-badge {
+    display: inline-block;
+    background: #e0f2e8;
+    color: var(--mason-green);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* ===================================
+   REPORT FORMS
+=================================== */
+
+form {
+    max-width: 520px;
+    margin: 25px auto;
+    padding: 28px;
+    background: white;
+    border-radius: 14px;
+    text-align: left;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+form label {
+    display: block;
+    margin: 15px 0 6px;
+    font-weight: bold;
+}
+
+form input,
+form select,
+form textarea {
+    display: block;
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #cbd5ce;
+    border-radius: 7px;
+    font-size: 15px;
+}
+
+form textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+form button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: var(--mason-green);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+form button:hover {
+    background: #004d26;
+}
+
+/* ===================================
+   RESPONSIVE DESIGN
+=================================== */
+
+@media (max-width: 600px) {
+    body {
+        padding: 20px 12px;
+    }
+
+    .items-list {
+        grid-template-columns: 1fr;
+    }
+
+    .item-card {
+        padding: 18px;
+    }
+
+    form {
+        padding: 20px;
+    }
+}

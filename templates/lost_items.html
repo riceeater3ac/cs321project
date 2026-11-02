@@ -3,26 +3,107 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>Lost Items - MasonFind</title>
+
     <link rel="stylesheet"
           href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
+
 <body>
-    <h1>Reported Lost Items</h1>
 
-    {% for item in items %}
-    <div class="item-card">
-        <h2>{{ item["item_name"] }}</h2>
-        <p>Category: {{ item["category"] }}</p>
-        <p>Description: {{ item["description"] }}</p>
-        <p>Location: {{ item["location"] }}</p>
-        <p>Date Lost: {{ item["date_lost"] }}</p>
-    </div>
-    {% else %}
-    <p>No lost items reported yet.</p>
-    {% endfor %}
+    <main class="items-page">
 
-    <p><a href="{{ url_for('report_lost') }}">Report Another Item</a></p>
-    <p><a href="{{ url_for('home') }}">Back to Home</a></p>
+        <div class="page-header">
+            <h1>
+                <i data-lucide="search-check"></i>
+                Reported Lost Items
+            </h1>
+
+            <p>Browse items reported lost around campus.</p>
+        </div>
+
+        <nav class="items-navigation">
+            <a href="{{ url_for('home') }}"
+               class="nav-button">
+                <i data-lucide="house"></i>
+                Home
+            </a>
+
+            <a href="{{ url_for('report_lost') }}"
+               class="nav-button primary-button">
+                <i data-lucide="plus-circle"></i>
+                Report Lost Item
+            </a>
+        </nav>
+
+        <section class="items-list">
+
+            {% for item in items %}
+            <article class="item-card">
+
+                <h2>{{ item["item_name"] }}</h2>
+
+                {% if item["image"] %}
+                <img
+                    class="item-photo"
+                    src="{{ url_for('static',
+                        filename='uploads/' ~ item['image']) }}"
+                    alt="Photo of {{ item['item_name'] }}">
+                {% endif %}
+
+                <p>
+                    <i data-lucide="tag"></i>
+                    <strong>Category:</strong>
+                    {{ item["category"] }}
+                </p>
+
+                <p>
+                    <i data-lucide="file-text"></i>
+                    <strong>Description:</strong>
+                    {{ item["description"] }}
+                </p>
+
+                <p>
+                    <i data-lucide="map-pin"></i>
+                    <strong>Location:</strong>
+                    {{ item["location"] }}
+                </p>
+
+                <p>
+                    <i data-lucide="calendar-days"></i>
+                    <strong>Date Lost:</strong>
+                    {{ item["date_lost"] }}
+                </p>
+
+                <p>
+                    <i data-lucide="check-circle"></i>
+                    <strong>Status:</strong>
+                    <span class="status-badge">
+                        {{ item["status"] }}
+                    </span>
+                </p>
+
+            </article>
+            {% else %}
+            <div class="empty-state">
+                <i data-lucide="package-search"></i>
+                <p>No lost items reported yet.</p>
+            </div>
+            {% endfor %}
+
+        </section>
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+
 </body>
 </html>

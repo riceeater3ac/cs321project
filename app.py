@@ -4,6 +4,11 @@ from flask_mail import Mail, Message
 import sqlite3
 import os
 
+# New imports for image uploads
+from pathlib import Path
+from uuid import uuid4
+from PIL import Image, UnidentifiedImageError
+
 app = Flask(__name__)
 
 # Application configuration
@@ -18,6 +23,41 @@ app.config["MAIL_USE_TLS"] = False
 app.config["MAIL_USE_SSL"] = True
 
 mail = Mail(app)
+
+# Image upload configuration
+UPLOAD_FOLDER = Path(app.root_path) / "static" / "uploads"
+UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
+
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
+
+def save_image(file):
+    if not file or not file.filename:
+        return None
+
+    extension = file.filename.rsplit(".", 1)[-1].lower()
+
+    if extension not in {"jpg", "jpeg", "png", "webp"}:
+        raise ValueError("Only JPG, PNG, and WEBP images are allowed.")
+
+    try:
+        with Image.open(file.stream) as img:
+            img.verify()
+
+        file.stream.seek(0)
+
+        with Image.open(file.stream) as img:
+            if img.width * img.height > 20_000_000:
+                raise ValueError("Image is too large.")
+
+            filename = f"{uuid4().hex}.jpg"
+            img.convert("RGB").save(
+                UPLOAD_FOLDER / filename, "JPEG"
+            )
+
+        return filename
+
+    except (UnidentifiedImageError, OSError):
+        raise ValueError("Invalid image file.")
 
 
 # ======================================
@@ -34,7 +74,9 @@ def init_db():
                 category TEXT NOT NULL,
                 description TEXT NOT NULL,
                 location TEXT NOT NULL,
-                date_lost TEXT NOT NULL
+                date_lost TEXT NOT NULL,
+                image TEXT,
+                status TEXT NOT NULL DEFAULT 'Open'
             )
         """)
 
@@ -45,9 +87,30 @@ def init_db():
                 category TEXT NOT NULL,
                 description TEXT NOT NULL,
                 location TEXT NOT NULL,
-                date_found TEXT NOT NULL
+                date_found TEXT NOT NULL,
+                image TEXT,
+                status TEXT NOT NULL DEFAULT 'Open'
             )
         """)
+
+        # Add new columns to existing tables
+        for table in ("lost_items", "found_items"):
+            columns = {
+                row[1] for row in conn.execute(
+                    f"PRAGMA table_info({table})"
+                )
+            }
+
+            if "image" not in columns:
+                conn.execute(
+                    f"ALTER TABLE {table} ADD COLUMN image TEXT"
+                )
+
+            if "status" not in columns:
+                conn.execute(
+                    f"ALTER TABLE {table} "
+                    "ADD COLUMN status TEXT NOT NULL DEFAULT 'Open'"
+                )
 
 
 # ======================================
@@ -152,23 +215,32 @@ def report_lost():
         if not all([item_name, category, description, location, date_lost]):
             return "Please complete all fields.", 400
 
+        # Save uploaded photo
+        try:
+            image = save_image(request.files.get("image"))
+        except ValueError as error:
+            return str(error), 400
+
+        # Save item details and image in database
         with sqlite3.connect("masonfind.db") as conn:
             conn.execute("""
                 INSERT INTO lost_items
-                (item_name, category, description, location, date_lost)
-                VALUES (?, ?, ?, ?, ?)
+                (item_name, category, description,
+                 location, date_lost, image, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (
                 item_name,
                 category,
                 description,
                 location,
-                date_lost
+                date_lost,
+                image,
+                "Open"
             ))
 
         return redirect(url_for("lost_items"))
 
     return render_template("report_lost.html")
-
 
 # ======================================
 # VIEW LOST ITEMS
@@ -202,23 +274,32 @@ def report_found():
         if not all([item_name, category, description, location, date_found]):
             return "Please complete all fields.", 400
 
+        # Save uploaded photo
+        try:
+            image = save_image(request.files.get("image"))
+        except ValueError as error:
+            return str(error), 400
+
+        # Save item details and image in database
         with sqlite3.connect("masonfind.db") as conn:
             conn.execute("""
                 INSERT INTO found_items
-                (item_name, category, description, location, date_found)
-                VALUES (?, ?, ?, ?, ?)
+                (item_name, category, description,
+                 location, date_found, image, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (
                 item_name,
                 category,
                 description,
                 location,
-                date_found
+                date_found,
+                image,
+                "Open"
             ))
 
         return redirect(url_for("found_items"))
 
     return render_template("report_found.html")
-
 
 # ======================================
 # VIEW FOUND ITEMS
