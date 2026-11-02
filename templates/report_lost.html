@@ -11,7 +11,10 @@
     <h1>Report a Lost Item</h1>
     <p>Enter the details of your lost item.</p>
 
-    <form method="POST" action="{{ url_for('report_lost') }}">
+    <form method="POST"
+          action="{{ url_for('report_lost') }}"
+          enctype="multipart/form-data">
+
         <label>Item Name</label>
         <input type="text" name="item_name" required
                placeholder="Example: Black Backpack">
@@ -36,6 +39,14 @@
 
         <label>Date Lost</label>
         <input type="date" name="date_lost" required>
+
+        <!-- Upload Lost Item Image -->
+        <label>Upload Item Photo (Optional)</label>
+        <input type="file"
+               name="image"
+               accept="image/jpeg,image/png,image/webp">
+
+        <p>Upload a photo to help others find your lost item.</p>
 
         <button type="submit">Submit Lost Item</button>
     </form>

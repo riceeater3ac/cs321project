@@ -2,5 +2,8 @@
 __pycache__/
 *.pyc
 masonfind.db
+masonfind-backup.db
 .env
 .venv/
+.vscode/
+static/uploads/
