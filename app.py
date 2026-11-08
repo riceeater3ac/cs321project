@@ -130,14 +130,15 @@ def home():
 def login():
     try:
         if request.method == "POST":
-            user = request.form["user"].strip()
+            email = request.form["user"].strip()
 
-            session["user"] = user
+            session.clear()
+            session["pending_email"] = email
 
             msg = Message(
                 "email code",
                 sender=app.config["MAIL_USERNAME"],
-                recipients=[user]
+                recipients=[email]
             )
 
             msg.body = "code is 1234"
@@ -145,7 +146,7 @@ def login():
 
             return redirect(url_for("validate"))
 
-        if "user" in session:
+        if session.get("user"):
             return redirect(url_for("mainpage"))
 
         return render_template("login.html")
@@ -162,10 +163,17 @@ def login():
 
 @app.route("/validate", methods=["GET", "POST"])
 def validate():
+    if "pending_email" not in session:
+        flash("Please enter email.", "error")
+        return redirect(url_for("login"))
+
     if request.method == "POST":
         code = request.form["code"].strip()
 
         if code == "1234":
+            email = session["pending_email"]
+            session.clear()
+            session["user"] = email
             return redirect(url_for("mainpage"))
 
         flash("Incorrect code.", "error")
@@ -181,6 +189,10 @@ def validate():
 @app.route("/main")
 def mainpage():
     if "user" not in session:
+        if "pending_email" in session:
+            flash("Please enter verification code.", "error")
+            return redirect(url_for("validate"))
+        flash("Please enter email.", "error")
         return redirect(url_for("login"))
 
     return render_template("main.html", user=session["user"])
