@@ -1,13 +1,16 @@
-
 from flask import Flask, render_template, url_for, request, redirect, session, flash
 from flask_mail import Mail, Message
 import sqlite3
 import os
+import random
 
 # New imports for image uploads
 from pathlib import Path
 from uuid import uuid4
 from PIL import Image, UnidentifiedImageError
+
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -17,7 +20,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "development-only-secret")
 # Email configuration
 app.config["MAIL_SERVER"] = "smtp.gmail.com"
 app.config["MAIL_PORT"] = 465
-app.config["MAIL_USERNAME"] = "cs321lostandfound@gmail.com"
+app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
 app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
 app.config["MAIL_USE_TLS"] = False
 app.config["MAIL_USE_SSL"] = True
@@ -63,7 +66,6 @@ def save_image(file):
 # ======================================
 # DATABASE
 # ======================================
-
 def init_db():
     with sqlite3.connect("masonfind.db") as conn:
 
@@ -116,7 +118,6 @@ def init_db():
 # ======================================
 # HOME PAGE
 # ======================================
-
 @app.route("/")
 def home():
     return render_template("home.html")
@@ -125,9 +126,9 @@ def home():
 # ======================================
 # LOGIN
 # ======================================
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
+
     try:
         if request.method == "POST":
             email = request.form["user"].strip()
@@ -135,13 +136,15 @@ def login():
             session.clear()
             session["pending_email"] = email
 
+            session["login_code"] = random.randint(1000, 9999)
+
             msg = Message(
-                "email code",
+                "Your MasonFind Login Code",
                 sender=app.config["MAIL_USERNAME"],
                 recipients=[email]
             )
 
-            msg.body = "code is 1234"
+            msg.body = "Your MasonFind login code is " + str(session["login_code"])
             mail.send(msg)
 
             return redirect(url_for("validate"))
@@ -160,7 +163,6 @@ def login():
 # ======================================
 # EMAIL VERIFICATION
 # ======================================
-
 @app.route("/validate", methods=["GET", "POST"])
 def validate():
     if "pending_email" not in session:
@@ -170,7 +172,7 @@ def validate():
     if request.method == "POST":
         code = request.form["code"].strip()
 
-        if code == "1234":
+        if code == str(session.get("login_code", "")):
             email = session["pending_email"]
             session.clear()
             session["user"] = email
@@ -181,11 +183,9 @@ def validate():
 
     return render_template("validate.html")
 
-
 # ======================================
 # MAIN PAGE
 # ======================================
-
 @app.route("/main")
 def mainpage():
     if "user" not in session:
@@ -201,7 +201,6 @@ def mainpage():
 # ======================================
 # LOGOUT
 # ======================================
-
 @app.route("/logout")
 def logout():
     if "user" in session:
@@ -214,7 +213,6 @@ def logout():
 # ======================================
 # REPORT LOST ITEM
 # ======================================
-
 @app.route("/report-lost", methods=["GET", "POST"])
 def report_lost():
     if request.method == "POST":
@@ -257,7 +255,6 @@ def report_lost():
 # ======================================
 # VIEW LOST ITEMS
 # ======================================
-
 @app.route("/lost-items")
 def lost_items():
     with sqlite3.connect("masonfind.db") as conn:
@@ -273,7 +270,6 @@ def lost_items():
 # ======================================
 # REPORT FOUND ITEM
 # ======================================
-
 @app.route("/report-found", methods=["GET", "POST"])
 def report_found():
     if request.method == "POST":
@@ -316,7 +312,6 @@ def report_found():
 # ======================================
 # VIEW FOUND ITEMS
 # ======================================
-
 @app.route("/found-items")
 def found_items():
     with sqlite3.connect("masonfind.db") as conn:
@@ -332,7 +327,6 @@ def found_items():
 # ======================================
 # START APPLICATION
 # ======================================
-
 init_db()
 
 if __name__ == "__main__":
