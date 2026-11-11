@@ -133,9 +133,16 @@ def login():
         if request.method == "POST":
             email = request.form["user"].strip()
 
+            #ensure the user's address is a gmu address
+            if not email.lower().endswith("@gmu.edu"):
+                flash("Only GMU emails accepted.", "error")
+                return redirect(url_for("login"))
+
             session.clear()
             session["pending_email"] = email
 
+            #generate a random 4-digit login code on each login attempt.
+            #there are more secure ways to do this, but this should be fine for demonstration purposes.
             session["login_code"] = random.randint(1000, 9999)
 
             msg = Message(
