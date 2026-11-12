@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MasonFind</title>
+
+    <!-- Base styles first, then page-specific styles (later file wins ties) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='welcome.css') }}">
+</head>
+<body class="welcome">
+    <main class="welcome-card">
+
+        <header class="welcome-header">
+            <!-- Put your logo at static/logo.png -->
+            <img class="welcome-logo" src="{{ url_for('static', filename='logo.png') }}" alt="George Mason University logo">
+            <h1 class="welcome-brand">MasonFind</h1>
+            <p class="welcome-tagline">George Mason University<br>Lost and Found</p>
+
+            <svg class="welcome-wave" viewBox="0 0 400 60" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M0,22 C90,60 170,0 260,20 C320,34 360,40 400,24 L400,60 L0,60 Z" fill="#ffcc33"/>
+                <path d="M0,32 C90,66 170,10 260,30 C320,44 360,50 400,34 L400,60 L0,60 Z" fill="#ffffff"/>
+            </svg>
+        </header>
+
+        <section class="welcome-body">
+            <h2>Welcome</h2>
+            <p class="welcome-sub">Sign in to report or find lost items on campus.</p>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for msg in messages %}
+                        <p class="welcome-flash">{{ msg }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form class="welcome-form" method="POST" action="{{ url_for('login') }}">
+                <div class="field">
+                    <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="14" rx="2"/>
+                        <path d="M3 7l9 6 9-6"/>
+                    </svg>
+                    <input type="email" name="user" placeholder="Email address" aria-label="Email address" required>
+                </div>
+
+                <div class="field">
+                    <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="5" y="11" width="14" height="9" rx="2"/>
+                        <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+                    </svg>
+                    <input type="password" name="password" id="password" placeholder="Password" aria-label="Password">
+                    <button type="button" class="toggle-password" id="togglePassword" aria-label="Show password">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <button type="submit" class="btn-primary">Sign In</button>
+            </form>
+
+            <a class="forgot-link" href="#">Forgot password?</a>
+
+            <div class="or-divider"><span>or</span></div>
+
+            <a class="btn-outline" href="#">Create Account</a>
+        </section>
+    </main>
+
+    <script>
+        // Show/hide password
+        const pw = document.getElementById('password');
+        document.getElementById('togglePassword').addEventListener('click', function () {
+            const show = pw.type === 'password';
+            pw.type = show ? 'text' : 'password';
+            this.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+        });
+    </script>
+</body>
+</html>
