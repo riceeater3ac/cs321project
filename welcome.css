@@ -1,0 +1,233 @@
+/* ===================================
+   WELCOME / HOME SCREEN
+   Scoped under body.welcome so it overrides the
+   global body/form rules in style.css without
+   affecting other pages.
+=================================== */
+
+body.welcome {
+    padding: 0;
+    background: #e9edea;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.welcome-card {
+    width: 100%;
+    max-width: 420px;
+    min-height: 100vh;
+    background: #fff;
+    overflow: hidden;
+}
+
+/* ---------- Green header with wave ---------- */
+
+.welcome-header {
+    position: relative;
+    background: var(--mason-green);
+    color: #fff;
+    padding: 32px 20px 70px;
+    text-align: center;
+}
+
+.welcome-logo {
+    display: block;
+    height: 56px;
+    margin: 0 auto 6px;
+}
+
+.welcome-header .welcome-brand {
+    margin: 0;
+    color: #fff;
+    font-size: 30px;
+    letter-spacing: 0.5px;
+}
+
+.welcome-tagline {
+    margin: 4px 0 0;
+    font-size: 14px;
+    line-height: 1.3;
+    color: #fff;
+}
+
+.welcome-wave {
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 100%;
+    height: 56px;
+    display: block;
+}
+
+/* ---------- Body ---------- */
+
+.welcome-body {
+    padding: 8px 28px 36px;
+}
+
+.welcome-body h2 {
+    margin: 0 0 8px;
+    font-size: 30px;
+    color: #111;
+}
+
+.welcome-sub {
+    margin: 0 auto 22px;
+    max-width: 260px;
+    font-size: 15px;
+    color: #55605a;
+}
+
+.welcome-flash {
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    background: #fdf3d6;
+    border: 1px solid var(--mason-gold);
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+/* ---------- Form (cancels the card styling from style.css) ---------- */
+
+.welcome .welcome-form {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.welcome .field {
+    position: relative;
+    margin-bottom: 14px;
+}
+
+.welcome .field input {
+    height: 48px;
+    padding: 0 44px 0 46px;
+    border: 1px solid #c9d1cc;
+    border-radius: 8px;
+    font-size: 15px;
+    background: #fff;
+}
+
+.welcome .field input:focus {
+    outline: 2px solid var(--mason-green);
+    outline-offset: 1px;
+    border-color: var(--mason-green);
+}
+
+.welcome .field-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: #222;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* Eye button sits inside the password field */
+.welcome .toggle-password {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.welcome .toggle-password:hover {
+    background: none;
+}
+
+.welcome .toggle-password svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: #222;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* ---------- Buttons and links ---------- */
+
+.welcome .btn-primary {
+    height: 48px;
+    margin-top: 6px;
+    padding: 0;
+    border-radius: 8px;
+    font-size: 17px;
+}
+
+.welcome .forgot-link {
+    display: block;
+    margin: 16px 0 14px;
+    font-size: 14px;
+    color: #111;
+}
+
+.welcome .or-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+    color: #55605a;
+    font-size: 14px;
+}
+
+.welcome .or-divider::before,
+.welcome .or-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #cfd6d1;
+}
+
+.welcome .btn-outline {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    border: 1.5px solid var(--mason-green);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--mason-green);
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.welcome .btn-outline:hover {
+    background: #e7f2ec;
+}
+
+/* ---------- Desktop: float the card instead of full height ---------- */
+
+@media (min-width: 600px) {
+    body.welcome {
+        padding: 40px 20px;
+    }
+
+    .welcome-card {
+        min-height: 0;
+        border-radius: 16px;
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+    }
+}
