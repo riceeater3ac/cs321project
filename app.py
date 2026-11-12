@@ -137,14 +137,9 @@ def login():
             #there are more secure ways to do this, but this should be fine for demonstration purposes.
             session["login_code"] = random.randint(1000, 9999)
 
-            msg = Message(
-                "Your MasonFind Login Code",
-                sender=app.config["MAIL_USERNAME"],
-                recipients=[email]
-            )
-
-            msg.body = "Your MasonFind login code is " + str(session["login_code"])
-            mail.send(msg)
+            title = "Your MasonFind Login Code"
+            body = "Your MasonFind login code is " + str(session["login_code"])
+            send_email(title, body, email)
 
             return redirect(url_for("validate"))
 
@@ -267,46 +262,44 @@ def lost_items():
 
 
 # ======================================
-# REPORT FOUND ITEM
+# MOVE TO FOUND ITEMS
 # ======================================
-@app.route("/report-found", methods=["GET", "POST"])
-def report_found():
-    if request.method == "POST":
-        item_name = request.form["item_name"].strip()
-        category = request.form["category"]
-        description = request.form["description"].strip()
-        location = request.form["location"].strip()
-        date_found = request.form["date_found"]
+@app.route("/lost-items/<int:item_id>/mark-found", methods=["POST"])
+def mark_found(item_id):
+    # Save item details and image in database
+    with sqlite3.connect("masonfind.db") as conn:
+        conn.row_factory = sqlite3.Row
 
-        if not all([item_name, category, description, location, date_found]):
-            return "Please complete all fields.", 400
+        item = conn.execute(
+            "SELECT * FROM lost_items WHERE id = ?",
+            (item_id, )
+        ).fetchone()
 
-        # Save uploaded photo
-        try:
-            image = save_image(request.files.get("image"))
-        except ValueError as error:
-            return str(error), 400
+        conn.execute("""
+            INSERT INTO found_items
+            (item_name, category, description,
+             location, date_found, image, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            item["item_name"],
+            item["category"],
+            item["description"],
+            item["location"],
+            item["date_lost"],
+            item["image"],
+            "Closed"
+        ))
 
-        # Save item details and image in database
-        with sqlite3.connect("masonfind.db") as conn:
-            conn.execute("""
-                INSERT INTO found_items
-                (item_name, category, description,
-                 location, date_found, image, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (
-                item_name,
-                category,
-                description,
-                location,
-                date_found,
-                image,
-                "Open"
-            ))
+        title = "An item has been found!"
+        body = f"Your item: {item["item_name"]} has been found."
+        send_email(title, body, session["user"])
 
-        return redirect(url_for("found_items"))
+        conn.execute(
+            f"DELETE FROM lost_items WHERE id = ?",
+            (item_id, )
+        )
 
-    return render_template("report_found.html")
+    return redirect(url_for("found_items"))
 
 # ======================================
 # VIEW FOUND ITEMS
@@ -322,6 +315,30 @@ def found_items():
 
     return render_template("found_items.html", items=items)
 
+# ======================================
+# SEND EMAIL
+# ======================================
+def send_email(title, body, recipient):
+    msg = Message(
+        title,
+        sender=app.config["MAIL_USERNAME"],
+        recipients=[recipient]
+        )
+    msg.body = body
+    mail.send(msg)
+
+# ======================================
+# REMOVE ITEM
+# ======================================
+@app.route("/<item_type>-items/<int:item_id>/delete", methods=["POST"])
+def delete_item(item_type, item_id):
+    with sqlite3.connect("masonfind.db") as conn:
+        conn.execute(
+            f"DELETE FROM {item_type}_items WHERE id = ?",
+            (item_id, )
+        )
+
+    return redirect(request.referrer)
 
 # ======================================
 # START APPLICATION

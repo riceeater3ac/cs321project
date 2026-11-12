@@ -13,9 +13,7 @@
 
     <p>
         <a href="{{ url_for('mainpage') }}">Home</a>
-        <a href="{{ url_for('report_found') }}">
-            Report Found Item
-        </a>
+
     </p>
 
     <hr>
@@ -39,7 +37,19 @@
         <p><strong>Description:</strong> {{ item["description"] }}</p>
         <p><strong>Location:</strong> {{ item["location"] }}</p>
         <p><strong>Date Found:</strong> {{ item["date_found"] }}</p>
-        <p><strong>Status:</strong> {{ item["status"] }}</p>
+        <p><strong>Status:</strong> 
+            <span class="status-badge status-badge--{{ item['status'] | lower}}">
+                {{ item["status"] }}
+            </span>
+        </p>
+
+        <form method = "POST"
+            action="{{ url_for('delete_item', item_type = 'found', item_id=item['id']) }}"
+            onsubmit="return confirm('Delete this item? This action cannot be undone.');">
+            <button type = "submit" class="delete_item">
+                Delete
+            </button>
+        </form>
 
     </div>
     {% else %}

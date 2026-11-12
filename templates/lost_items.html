@@ -84,10 +84,18 @@
                 <p>
                     <i data-lucide="check-circle"></i>
                     <strong>Status:</strong>
-                    <span class="status-badge">
+                    <span class="status-badge status-badge--{{ item['status'] | lower}}">
                         {{ item["status"] }}
                     </span>
                 </p>
+
+                <form method = "POST"
+                action="{{ url_for('mark_found', item_id=item['id']) }}"
+                onsubmit="return confirm('Mark item as found? This action cannot be undone.');">
+                <button type = "submit" class="mark_found">
+                    Mark as Found
+                </button>
+                </form>
 
             </article>
             {% else %}

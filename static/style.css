@@ -149,12 +149,20 @@ a {
 
 .status-badge {
     display: inline-block;
-    background: #e0f2e8;
-    color: var(--mason-green);
     padding: 5px 12px;
     border-radius: 20px;
     font-weight: bold;
     font-size: 14px;
+}
+
+.status-badge--open {
+    background: #e0f2e8;
+    color: var(--mason-green);
+}
+
+.status-badge--closed {
+    background: #fbe3e3;
+    color: #660000;
 }
 
 /* ===================================
