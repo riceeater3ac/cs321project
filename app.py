@@ -116,17 +116,9 @@ def init_db():
 
 
 # ======================================
-# HOME PAGE
+# LOGIN / HOME PAGE
 # ======================================
-@app.route("/")
-def home():
-    return render_template("home.html")
-
-
-# ======================================
-# LOGIN
-# ======================================
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def login():
 
     try:
@@ -159,7 +151,7 @@ def login():
         if session.get("user"):
             return redirect(url_for("mainpage"))
 
-        return render_template("login.html")
+        return render_template("home.html")
 
     except Exception:
         app.logger.exception("Failed to send email.")
