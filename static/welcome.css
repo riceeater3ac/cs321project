@@ -231,3 +231,18 @@ body.welcome {
         box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
     }
 }
+
+/* ---------- Additions for create-account mode ---------- */
+
+.welcome .field-hint {
+    margin: -4px 0 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #55605a;
+    text-align: left;
+}
+
+/* Spacing now that "Forgot password?" is gone */
+.welcome .or-divider {
+    margin-top: 22px;
+}
