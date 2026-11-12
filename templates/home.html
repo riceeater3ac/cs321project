@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MasonFind - {% if mode == 'register' %}Create Account{% else %}Sign In{% endif %}</title>
+    <title>MasonFind - Sign In</title>
 
     <!-- Base styles first, then page-specific styles (later file wins ties) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -25,13 +25,8 @@
         </header>
 
         <section class="welcome-body">
-            {% if mode == 'register' %}
-                <h2>Create account</h2>
-                <p class="welcome-sub">Use your GMU email to report or find lost items on campus.</p>
-            {% else %}
-                <h2>Welcome</h2>
-                <p class="welcome-sub">Sign in to report or find lost items on campus.</p>
-            {% endif %}
+            <h2>Welcome</h2>
+            <p class="welcome-sub">Use your GMU email to report or find lost items on campus.</p>
 
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
@@ -42,7 +37,7 @@
             {% endwith %}
 
             <form class="welcome-form" method="POST"
-                  action="{% if mode == 'register' %}{{ url_for('register') }}{% else %}{{ url_for('login') }}{% endif %}">
+                  action="{{ url_for('login') }}">
 
                 <div class="field">
                     <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -53,66 +48,12 @@
                            aria-label="GMU email address" autocomplete="email" required>
                 </div>
 
-                <div class="field">
-                    <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <rect x="5" y="11" width="14" height="9" rx="2"/>
-                        <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
-                    </svg>
-                    <input type="password" name="password" id="password" placeholder="Password"
-                           aria-label="Password" required
-                           {% if mode == 'register' %}minlength="8" autocomplete="new-password"{% else %}autocomplete="current-password"{% endif %}>
-                    <button type="button" class="toggle-password" data-target="password" aria-label="Show password">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                    </button>
-                </div>
-
-                {% if mode == 'register' %}
-                <div class="field">
-                    <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <rect x="5" y="11" width="14" height="9" rx="2"/>
-                        <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
-                    </svg>
-                    <input type="password" name="confirm_password" id="confirm_password"
-                           placeholder="Confirm password" aria-label="Confirm password"
-                           minlength="8" autocomplete="new-password" required>
-                    <button type="button" class="toggle-password" data-target="confirm_password" aria-label="Show password">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                    </button>
-                </div>
-                <p class="field-hint">At least 8 characters. We'll email you a code to verify your address.</p>
-
-                <button type="submit" class="btn-primary">Create Account</button>
-                {% else %}
                 <button type="submit" class="btn-primary">Sign In</button>
-                {% endif %}
+
             </form>
-
-            <div class="or-divider"><span>or</span></div>
-
-            {% if mode == 'register' %}
-                <a class="btn-outline" href="{{ url_for('login') }}">Sign In</a>
-            {% else %}
-                <a class="btn-outline" href="{{ url_for('register') }}">Create Account</a>
-            {% endif %}
+            
         </section>
     </main>
 
-    <script>
-        // Show/hide password (works for every password field on the page)
-        document.querySelectorAll('.toggle-password').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                const input = document.getElementById(btn.dataset.target);
-                const show = input.type === 'password';
-                input.type = show ? 'text' : 'password';
-                btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
-            });
-        });
-    </script>
 </body>
 </html>
