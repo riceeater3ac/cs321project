@@ -1,60 +1,54 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MasonFind - Sign In</title>
 
-    <!-- Base styles first, then page-specific styles (later file wins ties) -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='welcome.css') }}">
+    <title>Verify Email - MasonFind</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='validate.css') }}">
 </head>
-<body class="welcome">
-    <main class="welcome-card">
 
-        <header class="welcome-header">
-            <!-- Put your logo at static/logo.png -->
-            <img class="welcome-logo" src="{{ url_for('static', filename='logo.png') }}" alt="George Mason University logo">
-            <h1 class="welcome-brand">MasonFind</h1>
-            <p class="welcome-tagline">George Mason University<br>Lost and Found</p>
+<body>
+    <div class="validation-card">
+        <h1>Verify Your Email</h1>
+        <p>
+            Enter the 4-digit verification code sent to your email address.
+        </p>
 
-            <svg class="welcome-wave" viewBox="0 0 400 60" preserveAspectRatio="none" aria-hidden="true">
-                <path d="M0,22 C90,60 170,0 260,20 C320,34 360,40 400,24 L400,60 L0,60 Z" fill="#ffcc33"/>
-                <path d="M0,32 C90,66 170,10 260,30 C320,44 360,50 400,34 L400,60 L0,60 Z" fill="#ffffff"/>
-            </svg>
-        </header>
+        <!-- Display flash messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for msg in messages %}
+                    <p class="flash-message">{{ msg }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-        <section class="welcome-body">
-            <h2>Verification</h2>
-            <p class="welcome-sub">The code has been sent to your email.</p>
-
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    {% for msg in messages %}
-                        <p class="welcome-flash" role="alert">{{ msg }}</p>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-            <form class="welcome-form" method="POST"
-                  action="{{ url_for('validate') }}">
-
-                <div class="field">
-                    <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <rect x="3" y="5" width="18" height="14" rx="2"/>
-                        <path d="M3 7l9 6 9-6"/>
-                    </svg>
-                    <input type=text name="code" placeholder="1234" 
-                            inputmode="numeric" maxlength="4" required>
-                </div>
-
-                <button type="submit" class="btn-primary">Confirm</button>
-
-            </form>
-            
-        </section>
-    </main>
-
+        <!-- Verification form -->
+        <form method="POST">
+            <input
+                class="code-input"
+                type="text"
+                name="code"
+                inputmode="numeric"
+                pattern="[0-9]{4}"
+                minlength="4"
+                maxlength="4"
+                autocomplete="one-time-code"
+                placeholder="••••"
+                aria-label="4-digit verification code"
+                required
+            >
+            <button class="submit-btn" type="submit">
+                Verify Email
+            </button>
+        </form>
+        <a class="back-link" href="{{ url_for('login') }}">
+            Back to Login
+        </a>
+    </div>
 </body>
 </html>
-
