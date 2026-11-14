@@ -218,6 +218,16 @@ form button:hover {
     background: #004d26;
 }
 
+.nofilter-form {
+    all: unset;
+}
+
+.nofilter-form select {
+    width: auto;
+    display: inline-block;
+    margin: 0;
+}
+
 /* ===================================
    RESPONSIVE DESIGN
 =================================== */

@@ -1,5 +1,6 @@
 from flask import Flask, render_template, url_for, request, redirect, session, flash
 from flask_mail import Mail, Message
+from datetime import date
 import sqlite3
 import os
 import random
@@ -251,14 +252,23 @@ def report_lost():
 # ======================================
 @app.route("/lost-items")
 def lost_items():
+    category = request.args.get("category", "")
+
     with sqlite3.connect("masonfind.db") as conn:
         conn.row_factory = sqlite3.Row
 
-        items = conn.execute(
-            "SELECT * FROM lost_items ORDER BY id DESC"
-        ).fetchall()
+        if category:
+            items = conn.execute(
+                "SELECT * FROM lost_items WHERE category = ? ORDER BY id DESC",
+                (category, )
+            ).fetchall()
 
-    return render_template("lost_items.html", items=items)
+        else:
+            items = conn.execute(
+                "SELECT * FROM lost_items ORDER BY id DESC"
+            ).fetchall()
+
+    return render_template("lost_items.html", items=items, selected_category = category)
 
 
 # ======================================
@@ -285,7 +295,7 @@ def mark_found(item_id):
             item["category"],
             item["description"],
             item["location"],
-            item["date_lost"],
+            date.today().isoformat(),
             item["image"],
             "Closed"
         ))
@@ -306,14 +316,23 @@ def mark_found(item_id):
 # ======================================
 @app.route("/found-items")
 def found_items():
+    category = request.args.get("category", "")
+    
     with sqlite3.connect("masonfind.db") as conn:
         conn.row_factory = sqlite3.Row
 
-        items = conn.execute(
-            "SELECT * FROM found_items ORDER BY id DESC"
-        ).fetchall()
+        if category:
+            items = conn.execute(
+                "SELECT * FROM found_items WHERE category = ? ORDER BY id DESC",
+                (category, )
+            ).fetchall()
+        
+        else:
+            items = conn.execute(
+                "SELECT * FROM found_items ORDER BY id DESC"
+            ).fetchall()
 
-    return render_template("found_items.html", items=items)
+    return render_template("found_items.html", items=items, selected_category = category)
 
 # ======================================
 # SEND EMAIL

@@ -40,6 +40,20 @@
                 <i data-lucide="plus-circle"></i>
                 Report Lost Item
             </a>
+            
+            <form method="GET" action="{{ url_for('lost_items') }}" class=nofilter-form>
+                <select id="category"
+                        name="category" class="nav-button primary-button category-button" 
+                        aria-label="Filter by category"
+                        onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    <option value="Electronics" {% if selected_category == "Electronics" %}selected{% endif %}>Electronics</option>
+                    <option value="Clothing" {% if selected_category == "Clothing" %}selected{% endif %}>Clothing</option>
+                    <option value="Books" {% if selected_category == "Books" %}selected{% endif %}>Books</option>
+                    <option value="Accessories" {% if selected_category == "Accessories" %}selected{% endif %}>Accessories</option>
+                    <option value="Other" {% if selected_category == "Other" %}selected{% endif %}>Other</option>
+                </select>
+            </form>
         </nav>
 
         <section class="items-list">
