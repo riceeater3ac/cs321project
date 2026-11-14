@@ -1,0 +1,88 @@
+:root {
+    --mason-green: #006633;
+    --mason-gold: #ffcc33;
+    --background: #f4f6f8;
+    --text: #26332c;
+}
+
+body {
+    margin: 0;
+    padding: 30px 20px;
+    font-family: Arial, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.validation-card {
+    background-color: white;
+    padding: 35px;
+    border-radius: 14px;
+    width: 350px;
+    text-align: center;
+}
+
+.validation-card h1 {
+    color: var(--mason-green);
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.validation-card p {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.code-input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 14px;
+    margin-top: 15px;
+    margin-bottom: 20px;
+
+    border: 1px solid #ccc;
+    border-radius: 8px;
+
+    font-size: 22px;
+    text-align: center;
+    letter-spacing: 8px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 13px;
+
+    background-color: var(--mason-green);
+    color: white;
+    border: none;
+    border-radius: 8px;
+
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.submit-btn:hover {
+    background-color: #004d24;
+}
+
+/* Back to login link */
+.back-link {
+    display: inline-block;
+    margin-top: 20px;
+    color: #006b32;
+    font-size: 14px;
+    text-decoration: underline;
+}
+
+/* Flash messages */
+.flash-message {
+    background-color: #f4f6f8;
+    color: #b42318;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+}

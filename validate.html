@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Verify Email - MasonFind</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='validate.css') }}">
+</head>
+
+<body>
+    <div class="validation-card">
+        <h1>Verify Your Email</h1>
+        <p>
+            Enter the 4-digit verification code sent to your email address.
+        </p>
+
+        <!-- Display flash messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for msg in messages %}
+                    <p class="flash-message">{{ msg }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Verification form -->
+        <form method="POST">
+            <input
+                class="code-input"
+                type="text"
+                name="code"
+                inputmode="numeric"
+                pattern="[0-9]{4}"
+                minlength="4"
+                maxlength="4"
+                autocomplete="one-time-code"
+                placeholder="••••"
+                aria-label="4-digit verification code"
+                required
+            >
+            <button class="submit-btn" type="submit">
+                Verify Email
+            </button>
+        </form>
+        <a class="back-link" href="{{ url_for('login') }}">
+            Back to Login
+        </a>
+    </div>
+</body>
+</html>
