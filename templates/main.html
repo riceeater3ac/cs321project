@@ -5,21 +5,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MasonFind Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
 </head>
+
 <body>
-    <h1>Welcome to MasonFind!</h1>
+    <main class="dashboard">
 
-    <p>Signed in as: {{ user }}</p>
+        <header class="hero">
+            <h1>MasonFind</h1>
+            <p>George Mason University</p>
+            <p>Lost and Found Portal</p>
+        </header>
 
-    <h2>Lost and Found Services</h2>
+        <section class="welcome">
+            <h2>Welcome to MasonFind!</h2>
+            <p>Your campus lost and found portal</p>
 
-    <p><a href="{{ url_for('report_lost') }}">Report Lost Item</a></p>
-    <p><a href="{{ url_for('lost_items') }}">View Lost Items</a></p>
+            <div class="user-badge">
+                Signed in as: {{ user }}
+            </div>
+        </section>
 
-    <p><a href="{{ url_for('found_items') }}">View Found Items</a></p>
+        <section class="services">
+            <h2>Lost and Found Services</h2>
 
-    <hr>
+            <div class="service-grid">
 
-    <p><a href="{{ url_for('logout') }}">Logout</a></p>
+                <div class="service-card">
+                    <div class="service-icon">🔎</div>
+                    <h3>Report Lost Item</h3>
+                    <p>
+                        Lost something on campus?
+                        Submit a report to help find it.
+                    </p>
+                    <a href="{{ url_for('report_lost') }}"
+                       class="service-btn primary">
+                        Report Lost Item
+                    </a>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">📋</div>
+                    <h3>View Lost Items</h3>
+                    <p>
+                        Browse items reported lost
+                        by other students.
+                    </p>
+                    <a href="{{ url_for('lost_items') }}"
+                       class="service-btn secondary">
+                        View Lost Items
+                    </a>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">📦</div>
+                    <h3>View Found Items</h3>
+                    <p>
+                        Explore items found on campus
+                        and look for your belongings.
+                    </p>
+                    <a href="{{ url_for('found_items') }}"
+                       class="service-btn secondary">
+                        View Found Items
+                    </a>
+                </div>
+
+            </div>
+        </section>
+
+        <footer>
+            <a href="{{ url_for('logout') }}" class="logout">
+                Logout
+            </a>
+            <p>George Mason University | MasonFind</p>
+        </footer>
+
+    </main>
 </body>
 </html>
