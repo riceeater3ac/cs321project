@@ -32,6 +32,7 @@
 
             <div class="service-grid">
 
+                <!-- Report Lost Item -->
                 <div class="service-card">
                     <div class="service-icon">🔎</div>
                     <h3>Report Lost Item</h3>
@@ -45,6 +46,7 @@
                     </a>
                 </div>
 
+                <!-- View Lost Items -->
                 <div class="service-card">
                     <div class="service-icon">📋</div>
                     <h3>View Lost Items</h3>
@@ -58,8 +60,23 @@
                     </a>
                 </div>
 
+                <!-- Report Found Item -->
                 <div class="service-card">
                     <div class="service-icon">📦</div>
+                    <h3>Report Found Item</h3>
+                    <p>
+                        Found something on campus?
+                        Submit a report to help its owner.
+                    </p>
+                    <a href="{{ url_for('report_found') }}"
+                       class="service-btn primary">
+                        Report Found Item
+                    </a>
+                </div>
+
+                <!-- View Found Items -->
+                <div class="service-card">
+                    <div class="service-icon">📋</div>
                     <h3>View Found Items</h3>
                     <p>
                         Explore items found on campus

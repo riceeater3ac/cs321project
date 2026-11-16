@@ -16,14 +16,14 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: var(--background);
+    background: var(--background);
     color: var(--text);
     text-align: center;
     margin: 0;
     padding: 40px 20px;
 }
 
-h1 {
+h1, .item-card h2, .results-heading {
     color: var(--mason-green);
 }
 
@@ -73,10 +73,10 @@ a {
     align-items: center;
     gap: 8px;
     padding: 12px 18px;
-    border-radius: 8px;
     border: 1px solid var(--mason-green);
-    color: var(--mason-green);
+    border-radius: 8px;
     background: white;
+    color: var(--mason-green);
     text-decoration: none;
     font-weight: bold;
 }
@@ -100,29 +100,26 @@ a {
 
 .items-list {
     display: grid;
-    grid-template-columns:
-        repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
     gap: 20px;
 }
 
 .item-card {
     background: white;
     padding: 24px;
-    border-radius: 14px;
     border: 1px solid #e0e7e2;
+    border-radius: 14px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     text-align: left;
     min-width: 0;
 }
 
 .item-card h2 {
-    color: var(--mason-green);
     margin-top: 0;
 }
 
 .item-card p {
     font-size: 15px;
-    line-height: 1.6;
 }
 
 .item-card svg {
@@ -138,7 +135,7 @@ a {
     width: 100%;
     max-height: 250px;
     object-fit: contain;
-    background: #f4f6f8;
+    background: var(--background);
     border-radius: 10px;
     margin: 15px 0;
 }
@@ -151,8 +148,8 @@ a {
     display: inline-block;
     padding: 5px 12px;
     border-radius: 20px;
-    font-weight: bold;
     font-size: 14px;
+    font-weight: bold;
 }
 
 .status-badge--open {
@@ -219,6 +216,101 @@ form button:hover {
 }
 
 /* ===================================
+   SEARCH AND FILTER
+=================================== */
+
+.item-search-form {
+    max-width: 650px;
+    margin: 0 auto 35px;
+    padding: 28px;
+    background: white;
+    border: 1px solid #e0e7e2;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    text-align: left;
+}
+
+.search-field {
+    margin-bottom: 18px;
+}
+
+.search-field label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--mason-green);
+    font-weight: bold;
+}
+
+.search-field input,
+.search-field textarea,
+.search-field select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cbd5ce;
+    border-radius: 8px;
+    font: inherit;
+}
+
+.search-field textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.search-field input:focus,
+.search-field textarea:focus,
+.search-field select:focus {
+    outline: none;
+    border-color: var(--mason-green);
+}
+
+.search-submit,
+.search-clear {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.search-submit {
+    background: var(--mason-green);
+    color: white;
+    border: none;
+}
+
+.search-submit:hover {
+    background: #004d26;
+}
+
+.search-clear {
+    margin-top: 10px;
+    background: white;
+    color: var(--mason-green);
+    border: 1px solid var(--mason-green);
+}
+
+.search-clear:hover {
+    background: #e7f2ec;
+}
+
+.results-heading {
+    margin-bottom: 22px;
+    text-align: left;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 30px;
+    color: #66736b;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+/* ===================================
    RESPONSIVE DESIGN
 =================================== */
 
@@ -235,7 +327,8 @@ form button:hover {
         padding: 18px;
     }
 
-    form {
+    form,
+    .item-search-form {
         padding: 20px;
     }
 }

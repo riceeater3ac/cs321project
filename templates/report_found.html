@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Report Found Item - MasonFind</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <main class="items-page">
+
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1>📦 Report a Found Item</h1>
+            <p>Enter the details of the item you found below.</p>
+        </header>
+
+        <!-- Navigation Buttons -->
+        <nav class="items-navigation">
+
+            <a href="{{ url_for('mainpage') }}"
+               class="nav-button">
+                ⌂ &nbsp; Back to Dashboard
+            </a>
+
+            <a href="{{ url_for('found_items') }}"
+               class="nav-button">
+                ☷ &nbsp; View Found Items
+            </a>
+
+        </nav>
+
+        <!-- Report Found Item Form -->
+        <form action="{{ url_for('report_found') }}"
+              method="POST"
+              enctype="multipart/form-data">
+
+            <label for="item_name">Item Name</label>
+            <input type="text"
+                   id="item_name"
+                   name="item_name"
+                   placeholder="Example: Black Backpack"
+                   required>
+
+            <label for="category">Category</label>
+            <select id="category"
+                    name="category"
+                    required>
+                <option value="">Select Category</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Clothing">Clothing</option>
+                <option value="Books">Books</option>
+                <option value="Accessories">Accessories</option>
+                <option value="Other">Other</option>
+            </select>
+
+            <label for="description">Description</label>
+            <textarea id="description"
+                      name="description"
+                      placeholder="Describe the found item"
+                      required></textarea>
+
+            <label for="location">Found Location</label>
+            <input type="text"
+                   id="location"
+                   name="location"
+                   placeholder="Example: Fenwick Library"
+                   required>
+
+            <label for="date_found">Date Found</label>
+            <input type="date"
+                   id="date_found"
+                   name="date_found"
+                   required>
+
+            <label for="image">
+                Upload Photo (Optional)
+            </label>
+            <input type="file"
+                   id="image"
+                   name="image"
+                   accept=".jpg,.jpeg,.png,.webp">
+
+            <button type="submit">
+                Submit Found Item
+            </button>
+
+        </form>
+
+    </main>
+</body>
+</html>
