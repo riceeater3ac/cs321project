@@ -3,81 +3,279 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Found Items - MasonFind</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Found Items - MasonFind</title>
+
     <link rel="stylesheet"
           href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
 
-    <h1>Found Items</h1>
+<body>
+<main class="items-page">
+
+    <!-- ===================================
+         PAGE HEADER
+    =================================== -->
+
+    <div class="page-header">
+        <h1>Search Found Items</h1>
+        <p>Describe your missing item to find matching reports.</p>
+    </div>
 
     <nav class="items-navigation">
-            <a href="{{ url_for('mainpage') }}"
-               class="nav-button">
-                <i data-lucide="house"></i>
-                Home
-            </a>
+        <a href="{{ url_for('mainpage') }}" class="nav-button">
+            Home
+        </a>
 
-            <a href="{{ url_for('report_lost') }}"
-               class="nav-button primary-button">
-                <i data-lucide="plus-circle"></i>
-                Report Lost Item
-            </a>
-            
-            <form method="GET" action="{{ url_for('found_items') }}" class=nofilter-form>
-                <select id="category"
-                        name="category" class="nav-button primary-button category-button" 
-                        aria-label="Filter by category"
-                        onchange="this.form.submit()">
-                    <option value="">All Categories</option>
-                    <option value="Electronics" {% if selected_category == "Electronics" %}selected{% endif %}>Electronics</option>
-                    <option value="Clothing" {% if selected_category == "Clothing" %}selected{% endif %}>Clothing</option>
-                    <option value="Books" {% if selected_category == "Books" %}selected{% endif %}>Books</option>
-                    <option value="Accessories" {% if selected_category == "Accessories" %}selected{% endif %}>Accessories</option>
-                    <option value="Other" {% if selected_category == "Other" %}selected{% endif %}>Other</option>
-                </select>
+        <a href="{{ url_for('report_found') }}"
+           class="nav-button primary-button">
+            Report Found Item
+        </a>
+    </nav>
+
+    <!-- ===================================
+         SEARCH AND FILTER
+    =================================== -->
+
+    <section class="item-search-form">
+
+        <div class="search-field">
+            <label for="nameSearch">Item Name</label>
+            <input type="search"
+                   id="nameSearch"
+                   placeholder="e.g., AirPods Pro">
+        </div>
+
+        <div class="search-field">
+            <label for="descriptionSearch">Description</label>
+            <textarea id="descriptionSearch"
+                      placeholder="e.g., White AirPods with black case"></textarea>
+        </div>
+
+        <div class="search-field">
+            <label for="categoryFilter">Category</label>
+            <select id="categoryFilter">
+                <option value="all">All Categories</option>
+                <option value="electronics">Electronics</option>
+                <option value="clothing">Clothing</option>
+                <option value="books">Books</option>
+                <option value="accessories">Accessories</option>
+                <option value="other">Other</option>
+            </select>
+        </div>
+
+        <button type="button"
+                id="searchButton"
+                class="search-submit">
+            Search Items
+        </button>
+
+        <button type="button"
+                id="clearButton"
+                class="search-clear">
+            Clear Search
+        </button>
+
+    </section>
+
+    <!-- ===================================
+         SEARCH RESULTS
+    =================================== -->
+
+    <h2 class="results-heading" id="resultsHeading" hidden>
+        Search Results
+    </h2>
+
+    <section class="items-list" id="itemsList" hidden>
+
+        {% for item in items %}
+
+        <article class="item-card"
+                 data-name="{{ item['item_name'] | lower | e }}"
+                 data-description="{{ item['description'] | lower | e }}"
+                 data-category="{{ item['category'] | lower | e }}">
+
+            <h2>{{ item["item_name"] }}</h2>
+
+            {% if item["image"] %}
+            <img class="item-photo"
+                 src="{{ url_for('static', filename='uploads/' ~ item['image']) }}"
+                 alt="Photo of {{ item['item_name'] }}">
+            {% endif %}
+
+            <p>
+                <strong>Category:</strong>
+                {{ item["category"] }}
+            </p>
+
+            <p>
+                <strong>Description:</strong>
+                {{ item["description"] }}
+            </p>
+
+            <p>
+                <strong>Location:</strong>
+                {{ item["location"] }}
+            </p>
+
+            <p>
+                <strong>Date Found:</strong>
+                {{ item["date_found"] }}
+            </p>
+
+            <p>
+                <strong>Status:</strong>
+                <span class="status-badge status-badge--{{ item['status'] | lower }}">
+                    {{ item["status"] }}
+                </span>
+            </p>
+
+            <form method="POST"
+                  action="{{ url_for('delete_item', item_type='found', item_id=item['id']) }}"
+                  onsubmit="return confirm('Delete this item?');">
+
+                <button type="submit" class="delete_item">
+                    Delete
+                </button>
             </form>
-        </nav>
 
-    <hr>
+        </article>
 
-    {% for item in items %}
-    <div class="item-card">
+        {% endfor %}
 
-        <h2>{{ item["item_name"] }}</h2>
+    </section>
 
-        <!-- Display uploaded photo -->
-        {% if item["image"] %}
-        <img
-            src="{{ url_for('static',
-                filename='uploads/' ~ item['image']) }}"
-            alt="Photo of {{ item['item_name'] }}"
-            style="max-width:250px; height:auto;
-                   border-radius:8px;">
-        {% endif %}
-
-        <p><strong>Category:</strong> {{ item["category"] }}</p>
-        <p><strong>Description:</strong> {{ item["description"] }}</p>
-        <p><strong>Location:</strong> {{ item["location"] }}</p>
-        <p><strong>Date Found:</strong> {{ item["date_found"] }}</p>
-        <p><strong>Status:</strong> 
-            <span class="status-badge status-badge--{{ item['status'] | lower}}">
-                {{ item["status"] }}
-            </span>
-        </p>
-
-        <form method = "POST"
-            action="{{ url_for('delete_item', item_type = 'found', item_id=item['id']) }}"
-            onsubmit="return confirm('Delete this item? This action cannot be undone.');">
-            <button type = "submit" class="delete_item">
-                Delete
-            </button>
-        </form>
-
+    <div id="noResults" class="empty-state" hidden>
+        <p>No matching found items found.</p>
     </div>
-    {% else %}
-        <p>No found items reported yet.</p>
-    {% endfor %}
+
+</main>
+
+<!-- ===================================
+     SEARCH JAVASCRIPT
+=================================== -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const nameSearch = document.getElementById("nameSearch");
+    const descriptionSearch = document.getElementById("descriptionSearch");
+    const categoryFilter = document.getElementById("categoryFilter");
+    const searchButton = document.getElementById("searchButton");
+    const clearButton = document.getElementById("clearButton");
+
+    const itemsList = document.getElementById("itemsList");
+    const resultsHeading = document.getElementById("resultsHeading");
+    const noResults = document.getElementById("noResults");
+
+    const cards = Array.from(
+        document.querySelectorAll(".item-card")
+    );
+
+    function normalize(text) {
+        return (text || "")
+            .toLowerCase()
+            .replace(/[^\w\s]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+
+    function getWords(text) {
+        return [...new Set(
+            normalize(text)
+                .split(" ")
+                .filter(word => word.length > 2)
+        )];
+    }
+
+    function filterItems() {
+        const name = normalize(nameSearch.value);
+        const description = normalize(descriptionSearch.value);
+        const category = normalize(categoryFilter.value);
+
+        if (!name || !description) {
+            alert("Please enter the item name and description.");
+            return;
+        }
+
+        const nameWords = getWords(name);
+        const descriptionWords = getWords(description);
+
+        let results = [];
+
+        cards.forEach(function(card) {
+            const itemName = normalize(card.dataset.name);
+            const itemDescription = normalize(card.dataset.description);
+            const itemCategory = normalize(card.dataset.category);
+
+            // Check item name
+            const nameMatch = nameWords.length > 0
+                ? nameWords.every(word => itemName.includes(word))
+                : itemName.includes(name);
+
+            // Check description similarity
+            const matchedWords = descriptionWords.filter(
+                word => itemDescription.includes(word)
+            ).length;
+
+            const score = descriptionWords.length > 0
+                ? matchedWords / descriptionWords.length
+                : Number(itemDescription.includes(description));
+
+            const descriptionMatch = score >= 0.5;
+
+            // Check category
+            const categoryMatch =
+                category === "all" || itemCategory === category;
+
+            const match =
+                nameMatch && descriptionMatch && categoryMatch;
+
+            card.hidden = !match;
+
+            if (match) {
+                results.push({
+                    card: card,
+                    score: score
+                });
+            }
+        });
+
+        // Show closest matches first
+        results.sort((a, b) => b.score - a.score);
+
+        results.forEach(result => {
+            itemsList.appendChild(result.card);
+        });
+
+        // Display results only after searching
+        resultsHeading.hidden = false;
+        itemsList.hidden = results.length === 0;
+        noResults.hidden = results.length > 0;
+
+        resultsHeading.textContent =
+            "Search Results (" + results.length + ")";
+    }
+
+    function clearSearch() {
+        nameSearch.value = "";
+        descriptionSearch.value = "";
+        categoryFilter.value = "all";
+
+        cards.forEach(card => {
+            card.hidden = true;
+        });
+
+        itemsList.hidden = true;
+        resultsHeading.hidden = true;
+        noResults.hidden = true;
+    }
+
+    searchButton.addEventListener("click", filterItems);
+    clearButton.addEventListener("click", clearSearch);
+
+});
+</script>
 
 </body>
 </html>

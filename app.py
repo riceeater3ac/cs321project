@@ -14,7 +14,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-
 # Application configuration
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "development-only-secret")
 
@@ -122,38 +121,28 @@ def init_db():
 @app.route("/", methods=["GET", "POST"])
 def login():
 
-    try:
-        if request.method == "POST":
-            email = request.form["user"].strip()
+    if request.method == "POST":
+        email = request.form["user"].strip()
 
-            #ensure the user's address is a gmu address
-            if not email.lower().endswith("@gmu.edu"):
-                flash("Only GMU emails accepted.", "error")
-                return redirect(url_for("login"))
+        if not email:
+            flash("Please enter your email.", "error")
+            return redirect(url_for("login"))
 
-            session.clear()
-            session["pending_email"] = email
+        # GMU email restriction temporarily disabled
+        # if not email.lower().endswith("@gmu.edu"):
+        #     flash("Only GMU emails accepted.", "error")
+        #     return redirect(url_for("login"))
 
-            #generate a random 4-digit login code on each login attempt.
-            #there are more secure ways to do this, but this should be fine for demonstration purposes.
-            session["login_code"] = random.randint(1000, 9999)
+        # TEMPORARY: Skip email verification for MVP testing
+        session.clear()
+        session["user"] = email
 
-            title = "Your MasonFind Login Code"
-            body = "Your MasonFind login code is " + str(session["login_code"])
-            send_email(title, body, email)
+        return redirect(url_for("mainpage"))
 
-            return redirect(url_for("validate"))
+    if session.get("user"):
+        return redirect(url_for("mainpage"))
 
-        if session.get("user"):
-            return redirect(url_for("mainpage"))
-
-        return render_template("home.html")
-
-    except Exception:
-        app.logger.exception("Failed to send email.")
-        flash("Failed to send email.", "error")
-        return redirect(url_for("login"))
-
+    return render_template("home.html")
 
 # ======================================
 # EMAIL VERIFICATION
@@ -301,7 +290,7 @@ def mark_found(item_id):
         ))
 
         title = "An item has been found!"
-        body = f"Your item: {item["item_name"]} has been found."
+        body = f"Your item: {item['item_name']} has been found."
         send_email(title, body, session["user"])
 
         conn.execute(
@@ -310,6 +299,49 @@ def mark_found(item_id):
         )
 
     return redirect(url_for("found_items"))
+
+# ======================================
+# REPORT FOUND ITEM
+# ======================================
+@app.route("/report-found", methods=["GET", "POST"])
+def report_found():
+    if "user" not in session:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        item_name = request.form["item_name"].strip()
+        category = request.form["category"]
+        description = request.form["description"].strip()
+        location = request.form["location"].strip()
+        date_found = request.form["date_found"]
+
+        if not all([item_name, category, description, location, date_found]):
+            return "Please complete all fields.", 400
+
+        try:
+            image = save_image(request.files.get("image"))
+        except ValueError as error:
+            return str(error), 400
+
+        with sqlite3.connect("masonfind.db") as conn:
+            conn.execute("""
+                INSERT INTO found_items
+                (item_name, category, description,
+                 location, date_found, image, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                item_name,
+                category,
+                description,
+                location,
+                date_found,
+                image,
+                "Open"
+            ))
+
+        return redirect(url_for("mainpage"))
+
+    return render_template("report_found.html")
 
 # ======================================
 # VIEW FOUND ITEMS
