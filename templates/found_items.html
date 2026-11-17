@@ -139,6 +139,16 @@
                 </button>
             </form>
 
+            {% if item["status"] == "Open"%}
+            <form method = "POST"
+                action="{{ url_for('toggle_status', item_type='found', item_id=item['id']) }}"
+                onsubmit="return confirm('Mark item as found? This action cannot be undone.');">
+                <button type = "submit" class="mark_found">
+                    Mark as Found
+                </button>
+                </form>
+            {% endif %}
+
         </article>
 
         {% endfor %}

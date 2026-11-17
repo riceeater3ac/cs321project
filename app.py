@@ -187,7 +187,7 @@ def mainpage():
 # ======================================
 @app.route("/logout")
 def logout():
-    if "user" in session:
+    if "user" in session or "pending_email" in session:
         session.clear()
         flash("You have been logged out.", "info")
 
@@ -298,7 +298,7 @@ def mark_found(item_id):
             (item_id, )
         )
 
-    return redirect(url_for("found_items"))
+    return redirect(request.referrer)
 
 # ======================================
 # REPORT FOUND ITEM
@@ -388,6 +388,33 @@ def delete_item(item_type, item_id):
             f"DELETE FROM {item_type}_items WHERE id = ?",
             (item_id, )
         )
+
+    return redirect(request.referrer)
+
+# ======================================
+# TOGGLE STATUS
+# ======================================
+@app.route("/<item_type>-items/<int:item_id>/toggle", methods=["POST"])
+def toggle_status(item_type, item_id):
+    with sqlite3.connect("masonfind.db") as conn:
+        conn.row_factory = sqlite3.Row
+        
+        item = conn.execute(
+                    f"SELECT * FROM {item_type}_items WHERE id = ?",
+                    (item_id, )
+                ).fetchone()
+
+        new_status = "Closed" if item["status"] == "Open" else "Open"
+        
+        conn.execute(
+            f"UPDATE {item_type}_items SET status = ? WHERE id = ?",
+            (new_status, item_id)
+        )
+
+    
+    title = "An item has been found!"
+    body = f"Your item: {item['item_name']} has been found."
+    send_email(title, body, session["user"])
 
     return redirect(request.referrer)
 
