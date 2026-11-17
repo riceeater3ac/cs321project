@@ -118,31 +118,38 @@ def init_db():
 # ======================================
 # LOGIN / HOME PAGE
 # ======================================
+
 @app.route("/", methods=["GET", "POST"])
 def login():
-
-    if request.method == "POST":
-        email = request.form["user"].strip()
-
-        if not email:
-            flash("Please enter your email.", "error")
-            return redirect(url_for("login"))
-
-        # GMU email restriction temporarily disabled
-        # if not email.lower().endswith("@gmu.edu"):
-        #     flash("Only GMU emails accepted.", "error")
-        #     return redirect(url_for("login"))
-
-        # TEMPORARY: Skip email verification for MVP testing
-        session.clear()
-        session["user"] = email
-
-        return redirect(url_for("mainpage"))
-
     if session.get("user"):
         return redirect(url_for("mainpage"))
 
+    if request.method == "POST":
+        email = request.form.get("user", "").strip()
+
+        # Only GMU email addresses are accepted
+        if not email.lower().endswith("@gmu.edu"):
+            flash("Only GMU emails accepted.", "error")
+            return redirect(url_for("login"))
+
+        session.clear()
+        session["pending_email"] = email
+        session["login_code"] = random.randint(1000, 9999)
+
+        title = "Your MasonFind Login Code"
+        body = "Your MasonFind login code is " + str(session["login_code"])
+
+        try:
+            send_email(title, body, email)
+        except Exception:
+            app.logger.exception("Failed to send email.")
+            flash("Failed to send email.", "error")
+            return redirect(url_for("login"))
+
+        return redirect(url_for("validate"))
+
     return render_template("home.html")
+
 
 # ======================================
 # EMAIL VERIFICATION
@@ -150,20 +157,20 @@ def login():
 @app.route("/validate", methods=["GET", "POST"])
 def validate():
     if "pending_email" not in session:
-        flash("Please enter email.", "error")
         return redirect(url_for("login"))
 
     if request.method == "POST":
-        code = request.form["code"].strip()
+        code = request.form.get("code", "").strip()
 
-        if code == str(session.get("login_code", "")):
+        if code == str(session.get("login_code")):
             email = session["pending_email"]
             session.clear()
             session["user"] = email
+
+            flash("Login successful!", "success")
             return redirect(url_for("mainpage"))
 
-        flash("Incorrect code.", "error")
-        return redirect(url_for("validate"))
+        flash("Invalid verification code.", "error")
 
     return render_template("validate.html")
 
