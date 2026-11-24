@@ -1,231 +1,116 @@
-"""Tests for reporting and listing lost / found items, and the category filter."""
+"""Tests for login (currently just an email), /main, and logout."""
 import pytest
 
-from conftest import redirect_path
-
-# Everything that differs between the lost and found versions of each route.
-KINDS = [
-    pytest.param(
-        dict(report="/report-lost", listing="/lost-items", table="lost_items",
-             date_field="date_lost", list_template="lost_items.html",
-             after_post="/lost-items"),
-        id="lost",
-    ),
-    pytest.param(
-        dict(report="/report-found", listing="/found-items", table="found_items",
-             date_field="date_found", list_template="found_items.html",
-             after_post="/main"),            # found reports go back to the main page
-        id="found",
-    ),
-]
+from conftest import USER_EMAIL, flashed, redirect_path, session_value
 
 
-def valid_form(kind, **overrides):
-    form = {
-        "item_name": "Blue Water Bottle",
-        "category": "Personal Items",
-        "description": "Dented, with a GMU sticker",
-        "location": "Fenwick Library",
-        kind["date_field"]: "2026-11-20",
-    }
-    form.update(overrides)
-    return form
+# ---------- Login page ----------
 
-
-@pytest.fixture(autouse=True)
-def _logged_in(log_in):
-    """/report-found requires login, so log in for every test in this file.
-    (The login-protection tests at the bottom use a fresh client instead.)"""
-    log_in()
-
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_report_form_page_loads(client, kind):
-    assert client.get(kind["report"]).status_code == 200
-
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_listing_page_loads_when_empty(client, kind):
-    assert client.get(kind["listing"]).status_code == 200
-
-
-# ---------- Valid reports ----------
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_valid_report_is_saved(client, query, kind):
-    response = client.post(kind["report"], data=valid_form(kind))
-
-    assert response.status_code == 302
-    assert redirect_path(response) == kind["after_post"]
-
-    rows = query(f"SELECT * FROM {kind['table']}")
-    assert len(rows) == 1
-    row = rows[0]
-    assert row["item_name"] == "Blue Water Bottle"
-    assert row["category"] == "Personal Items"
-    assert row["description"] == "Dented, with a GMU sticker"
-    assert row["location"] == "Fenwick Library"
-    assert row[kind["date_field"]] == "2026-11-20"
-    assert row["status"] == "Open"
-    assert row["image"] is None              # photo is optional
-
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_text_fields_are_trimmed(client, query, kind):
-    client.post(kind["report"], data=valid_form(
-        kind, item_name="  Keys  ", description=" On a red lanyard ", location=" JC "))
-
-    row = query(f"SELECT * FROM {kind['table']}")[0]
-    assert (row["item_name"], row["description"], row["location"]) == (
-        "Keys", "On a red lanyard", "JC")
-
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_lost_and_found_tables_are_separate(client, query, kind):
-    client.post(kind["report"], data=valid_form(kind))
-
-    other = "found_items" if kind["table"] == "lost_items" else "lost_items"
-    assert query(f"SELECT * FROM {other}") == []
-
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_sql_injection_text_is_stored_literally(client, query, kind):
-    nasty = "x'); DROP TABLE lost_items; --"
-    client.post(kind["report"], data=valid_form(kind, item_name=nasty))
-
-    assert query(f"SELECT item_name FROM {kind['table']}")[0]["item_name"] == nasty
-    query("SELECT * FROM lost_items")        # tables still exist
-    query("SELECT * FROM found_items")
-
-
-# ---------- Invalid reports ----------
-
-@pytest.mark.parametrize("kind", KINDS)
-@pytest.mark.parametrize("field", ["item_name", "description", "location"])
-def test_blank_required_text_field_is_rejected(client, query, kind, field):
-    response = client.post(kind["report"], data=valid_form(kind, **{field: "   "}))
-
-    assert response.status_code == 400
-    assert query(f"SELECT * FROM {kind['table']}") == []
-
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_blank_date_is_rejected(client, query, kind):
-    response = client.post(kind["report"], data=valid_form(kind, **{kind["date_field"]: ""}))
-
-    assert response.status_code == 400
-    assert query(f"SELECT * FROM {kind['table']}") == []
-
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_missing_form_field_is_rejected(client, query, kind):
-    form = valid_form(kind)
-    del form["category"]
-
-    response = client.post(kind["report"], data=form)
-
-    assert response.status_code == 400
-    assert query(f"SELECT * FROM {kind['table']}") == []
-
-
-# ---------- Listing pages ----------
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_listing_shows_newest_first(client, templates, kind):
-    for name in ("First", "Second", "Third"):
-        client.post(kind["report"], data=valid_form(kind, item_name=name))
-
-    response = client.get(kind["listing"])
+def test_login_page_loads(client, templates):
+    response = client.get("/")
 
     assert response.status_code == 200
-    template_name, context = templates[-1]
-    assert template_name == kind["list_template"]
-    assert [item["item_name"] for item in context["items"]] == ["Third", "Second", "First"]
+    assert templates[-1][0] == "home.html"
 
 
-# ---------- Category filter (?category=...) ----------
-
-@pytest.fixture
-def three_items(add_item):
-    def run(table):
-        add_item(table, item_name="A", category="Bags")
-        add_item(table, item_name="B", category="Keys")
-        add_item(table, item_name="C", category="Bags")
-    return run
-
-
-def shown(templates):
-    """(item names, selected_category) from the most recently rendered page."""
-    _, context = templates[-1]
-    return [i["item_name"] for i in context["items"]], context["selected_category"]
-
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_category_filter_keeps_only_matching_items(client, templates, three_items, kind):
-    three_items(kind["table"])
-
-    client.get(kind["listing"], query_string={"category": "Bags"})
-
-    assert shown(templates) == (["C", "A"], "Bags")      # newest first
-
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_no_category_shows_everything(client, templates, three_items, kind):
-    three_items(kind["table"])
-
-    client.get(kind["listing"])
-
-    assert shown(templates) == (["C", "B", "A"], "")
-
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_empty_category_shows_everything(client, templates, three_items, kind):
-    three_items(kind["table"])
-
-    client.get(kind["listing"], query_string={"category": ""})
-
-    assert shown(templates) == (["C", "B", "A"], "")
-
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_unknown_category_shows_nothing(client, templates, three_items, kind):
-    three_items(kind["table"])
-
-    client.get(kind["listing"], query_string={"category": "Spaceships"})
-
-    assert shown(templates) == ([], "Spaceships")
-
-
-@pytest.mark.parametrize("kind", KINDS)
-def test_category_filter_is_safe_from_sql_injection(client, templates, three_items, kind):
-    three_items(kind["table"])
-
-    client.get(kind["listing"], query_string={"category": "' OR '1'='1"})
-
-    assert shown(templates)[0] == []         # treated as plain text, matches nothing
-
-
-# ---------- Login protection ----------
-# report-found already redirects to the login page when logged out, so these
-# pass today. The other pages are public right now; the xfail tests describe
-# what you would want if every page should need login. strict=True: when you
-# add the checks they will "unexpectedly pass", which fails the run until you
-# delete the xfail marker.
-
-@pytest.mark.parametrize("method", ["get", "post"])
-def test_report_found_requires_login(app, query, method):
-    fresh_client = app.test_client()                    # not logged in
-
-    response = getattr(fresh_client, method)("/report-found", data=valid_form(KINDS[1].values[0]))
-
-    assert redirect_path(response) == "/"
-    assert query("SELECT * FROM found_items") == []
-
-
-@pytest.mark.xfail(strict=True, reason="these routes do not require login yet")
-@pytest.mark.parametrize("path", ["/report-lost", "/lost-items", "/found-items"])
-def test_other_item_pages_require_login(app, path):
-    response = app.test_client().get(path)           # not logged in
+def test_valid_email_logs_in(client):
+    response = client.post("/", data={"user": f"  {USER_EMAIL}  "})  # spaces trimmed
 
     assert response.status_code == 302
+    assert redirect_path(response) == "/main"
+    assert session_value(client, "user") == USER_EMAIL
+
+
+@pytest.mark.parametrize("email", ["", "   "])
+def test_blank_email_is_rejected(client, email):
+    response = client.post("/", data={"user": email})
+
     assert redirect_path(response) == "/"
+    assert ("error", "Please enter your email.") in flashed(client)
+    assert session_value(client, "user") is None
+
+
+def test_missing_email_field_is_a_bad_request(client):
+    assert client.post("/", data={}).status_code == 400
+
+
+def test_logged_in_user_is_sent_to_main(client, log_in):
+    log_in()
+
+    response = client.get("/")
+
+    assert redirect_path(response) == "/main"
+
+
+def test_logging_in_again_replaces_the_previous_user(client, log_in):
+    log_in("first@gmu.edu")
+    client.post("/", data={"user": "second@gmu.edu"})
+
+    assert session_value(client, "user") == "second@gmu.edu"
+
+
+# ---------- /main ----------
+
+def test_main_requires_login(client):
+    response = client.get("/main")
+
+    assert redirect_path(response) == "/"
+    assert ("error", "Please enter email.") in flashed(client)
+
+
+def test_main_loads_when_logged_in(client, log_in, templates):
+    log_in()
+
+    response = client.get("/main")
+
+    assert response.status_code == 200
+    name, context = templates[-1]
+    assert name == "main.html"
+    assert context["user"] == USER_EMAIL
+
+
+# ---------- Logout ----------
+
+def test_logout_clears_the_session(client, log_in):
+    log_in()
+
+    response = client.get("/logout")
+
+    assert redirect_path(response) == "/"
+    assert session_value(client, "user") is None
+    assert ("info", "You have been logged out.") in flashed(client)
+    assert redirect_path(client.get("/main")) == "/"
+
+
+def test_logout_when_not_logged_in_is_harmless(client):
+    response = client.get("/logout")
+
+    assert redirect_path(response) == "/"
+    assert flashed(client) == []
+
+
+# ---------- Known gaps (see the note at the bottom of test_reports.py) ----------
+# These describe the behavior the login code is meant to have eventually. They
+# are marked xfail because login() currently skips these checks on purpose
+# ("temporarily disabled" / "TEMPORARY" in app.py). When you turn the checks
+# back on, they start passing, and strict=True makes the run fail so you
+# remember to delete the markers.
+
+@pytest.mark.xfail(strict=True, reason="GMU email restriction is temporarily disabled in login()")
+@pytest.mark.parametrize("email", [
+    "someone@gmail.com",
+    "someone@gmu.edu.evil.com",
+    "someone@mail.gmu.edu",
+])
+def test_non_gmu_email_is_rejected(client, email):
+    client.post("/", data={"user": email})
+
+    assert session_value(client, "user") is None
+    assert ("error", "Only GMU emails accepted.") in flashed(client)
+
+
+@pytest.mark.xfail(strict=True, reason="email verification is skipped for MVP testing")
+def test_email_alone_does_not_log_in(client):
+    client.post("/", data={"user": USER_EMAIL})
+
+    assert session_value(client, "user") is None
