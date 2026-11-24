@@ -1,12 +1,12 @@
 """Shared fixtures for the MasonFind tests."""
 import os
-import re
 import sqlite3
 import tempfile
+from urllib.parse import urlparse
 
 # app.py creates the database and upload folder when it is imported, so point
-# them at a throwaway location before importing it. This keeps the tests away
-# from real masonfind.db and static/uploads.
+# them at a throwaway location BEFORE importing it. This keeps the tests away
+# from your real masonfind.db and static/uploads.
 _IMPORT_DIR = tempfile.mkdtemp(prefix="masonfind-import-")
 os.environ["DATABASE"] = os.path.join(_IMPORT_DIR, "import.db")
 os.environ["UPLOAD_FOLDER"] = os.path.join(_IMPORT_DIR, "uploads")
@@ -19,9 +19,9 @@ os.environ["MAIL_PASSWORD"] = "not-a-real-password"
 import pytest
 from flask import template_rendered
 
-from app import app as flask_app, mail, init_db
+from app import app as flask_app, init_db
 
-GMU_EMAIL = "student@gmu.edu"
+USER_EMAIL = "student@gmu.edu"
 
 
 @pytest.fixture
@@ -45,6 +45,16 @@ def client(app):
 
 
 @pytest.fixture
+def log_in(client):
+    """Log the test client in as a user (login is just an email right now)."""
+    def run(email=USER_EMAIL):
+        response = client.post("/", data={"user": email})
+        assert session_value(client, "user") == email.strip(), "login helper failed"
+        return response
+    return run
+
+
+@pytest.fixture
 def query(app):
     """Run a SELECT against the test database and return the rows."""
     def run(sql, params=()):
@@ -58,29 +68,36 @@ def query(app):
 
 
 @pytest.fixture
-def get_code(client):
-    """Submit the login form and return the 4-digit code that was 'emailed'."""
-    def run(email=GMU_EMAIL):
-        with mail.record_messages() as outbox:
-            client.post("/login", data={"user": email})
-        assert len(outbox) == 1, "expected exactly one login email"
-        return re.search(r"\d{4}", outbox[0].body).group()
-    return run
-
-
-@pytest.fixture
-def log_in(client, get_code):
-    """Complete the whole email-code login for the given address."""
-    def run(email=GMU_EMAIL):
-        code = get_code(email)
-        client.post("/validate", data={"code": code})
-        return client
+def add_item(app):
+    """Insert an item straight into the database and return its id."""
+    def run(table="lost_items", **overrides):
+        date_column = "date_lost" if table == "lost_items" else "date_found"
+        row = {
+            "item_name": "Keys",
+            "category": "Keys",
+            "description": "Silver ring with two keys",
+            "location": "Johnson Center",
+            date_column: "2026-11-20",
+            "image": None,
+            "status": "Open",
+        }
+        row.update(overrides)
+        columns = ", ".join(row)
+        marks = ", ".join("?" * len(row))
+        conn = sqlite3.connect(app.config["DATABASE"])
+        try:
+            cursor = conn.execute(
+                f"INSERT INTO {table} ({columns}) VALUES ({marks})", tuple(row.values()))
+            conn.commit()
+            return cursor.lastrowid
+        finally:
+            conn.close()
     return run
 
 
 @pytest.fixture
 def templates(app):
-    """Record which templates were rendered and the data passed to them."""
+    """Record (template name, context) for every template that gets rendered."""
     rendered = []
 
     def record(sender, template, context, **extra):
@@ -94,6 +111,17 @@ def templates(app):
 def session_value(client, key, default=None):
     with client.session_transaction() as sess:
         return sess.get(key, default)
+
+
+def flashed(client):
+    """Return the flash messages waiting in the session as [(category, text)]."""
+    with client.session_transaction() as sess:
+        return list(sess.get("_flashes", []))
+
+
+def redirect_path(response):
+    """The path a redirect response points to (ignores host / query string)."""
+    return urlparse(response.headers["Location"]).path
 
 
 def flashed(client):
